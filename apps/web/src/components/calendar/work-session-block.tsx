@@ -92,7 +92,8 @@ export function WorkSessionBlock({
       type="button"
       data-work-session
       className={cn(
-        "absolute z-10 my-0.5 overflow-hidden rounded-md border border-dashed px-2 py-0.5 text-left",
+        // Solid base under the stripes, so nothing behind it shows through.
+        "absolute z-10 my-0.5 overflow-hidden rounded-md border border-dashed bg-background px-2 py-0.5 text-left",
         "hover:brightness-95 hover:z-20"
       )}
       style={{
