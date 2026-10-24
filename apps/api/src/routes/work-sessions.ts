@@ -13,20 +13,29 @@ import {
   gt,
   isNotNull,
   tasks,
+  users,
   workSessions,
 } from "@open-sunsama/database";
+import { dateSchema } from "@open-sunsama/utils";
 import { auth, requireScopes, type AuthVariables } from "../middleware/auth.js";
+import { localDayWindow } from "../lib/calendar-day-window.js";
 
 const workSessionsRouter = new Hono<{ Variables: AuthVariables }>();
 workSessionsRouter.use("*", auth);
 
-const rangeQuerySchema = z.object({
-  from: z.iso.datetime({ offset: true }),
-  to: z.iso.datetime({ offset: true }),
-});
+const rangeQuerySchema = z
+  .object({
+    // ISO instants, or one YYYY-MM-DD day in the user's timezone.
+    from: z.iso.datetime({ offset: true }).optional(),
+    to: z.iso.datetime({ offset: true }).optional(),
+    date: dateSchema.optional(),
+  })
+  .refine((q) => (q.date ? !q.from && !q.to : !!q.from && !!q.to), {
+    error: "Pass either date, or both from and to",
+  });
 
 /**
- * GET /work-sessions?from=&to=
+ * GET /work-sessions?from=&to= or ?date=
  * Sessions that overlap the range, plus any timer running now (ending now).
  */
 workSessionsRouter.get(
@@ -35,9 +44,19 @@ workSessionsRouter.get(
   zValidator("query", rangeQuerySchema),
   async (c) => {
     const userId = c.get("userId");
-    const from = new Date(c.req.valid("query").from);
-    const to = new Date(c.req.valid("query").to);
+    const query = c.req.valid("query");
     const db = getDb();
+
+    const [user] = await db
+      .select({ timezone: users.timezone })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    const day = query.date
+      ? localDayWindow(query.date, query.date, user?.timezone || "UTC")
+      : null;
+    const from = day ? day.start : new Date(query.from!);
+    const to = day ? day.end : new Date(query.to!);
 
     const finished = await db
       .select({
@@ -92,7 +111,11 @@ workSessionsRouter.get(
       ...runningSessions,
     ];
 
-    return c.json({ success: true, data: sessions });
+    return c.json({
+      success: true,
+      data: sessions,
+      meta: { timezone: day?.timezone ?? user?.timezone ?? "UTC" },
+    });
   }
 );
 
