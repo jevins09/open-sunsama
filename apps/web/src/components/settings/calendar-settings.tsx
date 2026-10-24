@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
   Label,
+  Switch,
 } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -130,6 +131,49 @@ function WorkingHoursCard() {
   );
 }
 
+function CalendarDisplayCard() {
+  const { user, updateUser } = useAuth();
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const showActualTime = user?.preferences?.showActualTime ?? true;
+
+  const handleShowActualTimeChange = async (checked: boolean) => {
+    setIsSaving(true);
+    await updateUser({
+      preferences: {
+        ...(user?.preferences ?? { themeMode: "system" as const, colorTheme: "default", fontFamily: "geist" }),
+        showActualTime: checked,
+      },
+    });
+    setIsSaving(false);
+    toast({ title: checked ? "Actual time shown" : "Actual time hidden" });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Calendar Display</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-actual-time">Show actual time on calendar</Label>
+            <p className="text-sm text-muted-foreground">
+              Show when you worked on tasks, from their timers, next to your planned time blocks
+            </p>
+          </div>
+          <Switch
+            id="show-actual-time"
+            checked={showActualTime}
+            onCheckedChange={handleShowActualTimeChange}
+            disabled={isSaving}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 /**
  * Calendar Settings Tab
  * Manages calendar account connections and individual calendar settings
@@ -212,6 +256,7 @@ export function CalendarSettings() {
   return (
     <>
       <WorkingHoursCard />
+      <CalendarDisplayCard />
       <Card>
         <CardHeader>
           <CardTitle>Calendar Integration</CardTitle>

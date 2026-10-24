@@ -60,6 +60,12 @@ export interface UserPreferences {
    * across accounts, devices, and logins.
    */
   addTaskPosition?: "top" | "bottom";
+
+  /**
+   * Whether the calendar shows when tasks were actually worked on (from
+   * their timers) next to the planned time blocks. Defaults to true.
+   */
+  showActualTime?: boolean;
 }
 
 /**

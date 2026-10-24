@@ -10,7 +10,7 @@ import {
   differenceInMinutes,
   addMinutes,
 } from "date-fns";
-import type { CalendarEvent, TimeBlock } from "@open-sunsama/types";
+import type { CalendarEvent, TimeBlock, WorkSession } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
 import {
@@ -22,6 +22,11 @@ import {
   snapToInterval,
 } from "@/hooks/useCalendarDnd";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
+import {
+  WorkSessionBlock,
+  sessionsOnDay,
+  sessionLayoutItem,
+} from "./work-session-block";
 import { useDragToCreate } from "@/hooks/useDragToCreate";
 import type {
   EventDragMode,
@@ -56,6 +61,8 @@ interface MultiDayViewProps {
   calendarEvents: CalendarEvent[];
   /** Time blocks across the range (may include blocks for any day) */
   timeBlocks: TimeBlock[];
+  /** Actual time worked across the range, shown next to the planned blocks */
+  workSessions?: WorkSession[];
   isLoading?: boolean;
   onExternalEventClick?: (event: CalendarEvent) => void;
   onBlockClick?: (block: TimeBlock) => void;
@@ -396,6 +403,7 @@ export function MultiDayView({
   days,
   calendarEvents,
   timeBlocks,
+  workSessions = [],
   isLoading = false,
   onExternalEventClick,
   onBlockClick,
@@ -467,10 +475,13 @@ export function MultiDayView({
             end: en > dayEnd ? dayEnd : en,
           };
         }),
+        ...sessionsOnDay(workSessions, day).map((session) =>
+          sessionLayoutItem(session, day)
+        ),
       ];
       return layoutOverlappingItems(items);
     });
-  }, [dayBuckets, days]);
+  }, [dayBuckets, days, workSessions]);
 
   // All-day banner: render multi-day spans as single horizontal bars
   // across the columns they cover, with lane stacking when bars overlap.
@@ -777,6 +788,19 @@ export function MultiDayView({
                       <div className="h-0.5 flex-1 bg-red-500 shadow-xs" />
                     </div>
                   )}
+
+                  {/* Actual time worked, next to the planned blocks */}
+                  {sessionsOnDay(workSessions, day).map((session) => (
+                    <WorkSessionBlock
+                      key={session.id}
+                      session={session}
+                      displayDate={day}
+                      layout={
+                        dayLayouts[i]?.get(`session:${session.id}`) ??
+                        DEFAULT_LAYOUT
+                      }
+                    />
+                  ))}
 
                   {/* Time blocks (above events) */}
                   {bucket.blocks.map((block) => {
