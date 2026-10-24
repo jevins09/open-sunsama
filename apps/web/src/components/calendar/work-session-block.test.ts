@@ -52,3 +52,16 @@ describe("sessionLayoutItem", () => {
     });
   });
 });
+
+describe("sessionLayoutItem for a short session", () => {
+  it("takes up at least 20 minutes so it doesn't draw over the next block", () => {
+    const short = session(
+      "d",
+      new Date(2026, 9, 23, 9, 0),
+      new Date(2026, 9, 23, 9, 2)
+    );
+    expect(sessionLayoutItem(short, DAY).end).toEqual(
+      new Date(2026, 9, 23, 9, 20)
+    );
+  });
+});

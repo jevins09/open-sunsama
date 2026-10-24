@@ -1,4 +1,12 @@
-import { format, differenceInMinutes, startOfDay, endOfDay } from "date-fns";
+import {
+  format,
+  differenceInMinutes,
+  addMinutes,
+  max,
+  min,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
 import type { WorkSession } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { calculateYFromTime, HOUR_HEIGHT } from "@/hooks/useCalendarDnd";
@@ -32,14 +40,21 @@ export function sessionsOnDay(
   );
 }
 
-/** A session's slot in the overlap layout, clipped to the given day. */
+/** Short sessions are drawn at least this tall so their title fits. */
+const MIN_DRAWN_MINUTES = 20;
+
+/**
+ * A session's slot in the overlap layout, clipped to the given day. It
+ * takes up at least the height it is drawn at, so a short session gets
+ * its own lane instead of drawing over the block after it.
+ */
 export function sessionLayoutItem(session: WorkSession, day: Date): LayoutItem {
-  const start = new Date(session.startedAt);
-  const end = new Date(session.endedAt);
+  const start = max([new Date(session.startedAt), startOfDay(day)]);
+  const end = min([new Date(session.endedAt), endOfDay(day)]);
   return {
     id: `session:${session.id}`,
-    start: start < startOfDay(day) ? startOfDay(day) : start,
-    end: end > endOfDay(day) ? endOfDay(day) : end,
+    start,
+    end: max([end, addMinutes(start, MIN_DRAWN_MINUTES)]),
   };
 }
 
@@ -82,7 +97,7 @@ export function WorkSessionBlock({
       )}
       style={{
         top: `${top}px`,
-        height: `${Math.max(height - 4, 16)}px`,
+        height: `${height - 4}px`, // Account for margin
         left: `calc(${(100 / layout.columnCount) * layout.lane}% + ${layout.lane === 0 ? "4px" : "1px"})`,
         width: `calc(${100 / layout.columnCount - COLUMN_GAP_PCT}% - ${layout.lane === 0 ? "4px" : "1px"})`,
         borderColor: color,

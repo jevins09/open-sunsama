@@ -3,6 +3,7 @@ import type { WorkSession } from "@open-sunsama/types";
 import { getApiClient } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { workSessionKeys } from "@/lib/query-keys";
+import { mergeBackToBackRuns } from "@/lib/work-sessions";
 
 function hideAll(): WorkSession[] {
   return [];
@@ -28,7 +29,7 @@ export function useWorkSessions(from: string, to: string) {
     },
     enabled: showActualTime,
     // Turning the setting off must also hide sessions already in the cache.
-    select: showActualTime ? undefined : hideAll,
+    select: showActualTime ? mergeBackToBackRuns : hideAll,
     // A running timer's block grows; refresh it every minute.
     refetchInterval: (query) =>
       query.state.data?.some((session) => session.isRunning) ? 60_000 : false,
