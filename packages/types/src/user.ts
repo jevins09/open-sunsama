@@ -66,6 +66,13 @@ export interface UserPreferences {
    * their timers) next to the planned time blocks. Defaults to true.
    */
   showActualTime?: boolean;
+
+  /**
+   * What the time total in each day's header shows, as in Sunsama's
+   * workload counter: the planned time, or actual vs planned. Clicking the
+   * total switches it. Defaults to "planned".
+   */
+  workloadCounter?: "planned" | "actual";
 }
 
 /**

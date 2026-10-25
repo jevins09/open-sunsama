@@ -43,6 +43,7 @@ export const userPreferencesSchema = z.object({
   calendarViewMode: z.enum(["day", "3-day", "week", "month"]).optional(),
   addTaskPosition: z.enum(["top", "bottom"]).optional(),
   showActualTime: z.boolean().optional(),
+  workloadCounter: z.enum(["planned", "actual"]).optional(),
 });
 
 /**
