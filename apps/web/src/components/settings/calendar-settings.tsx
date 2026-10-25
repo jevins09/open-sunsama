@@ -254,7 +254,7 @@ export function CalendarSettings() {
   }
 
   return (
-    <>
+    <div className="space-y-4">
       <WorkingHoursCard />
       <CalendarDisplayCard />
       <Card>
@@ -352,6 +352,6 @@ export function CalendarSettings() {
         onConfirm={handleRemoveAccount}
         isLoading={disconnectMutation.isPending}
       />
-    </>
+    </div>
   );
 }
