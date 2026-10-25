@@ -693,6 +693,7 @@ export function MobileCalendarView({
                       key={session.id}
                       session={session}
                       displayDate={selectedDate}
+                      blocks={timeBlocks}
                       layout={
                         itemLayouts.get(`session:${session.id}`) ??
                         DEFAULT_LAYOUT

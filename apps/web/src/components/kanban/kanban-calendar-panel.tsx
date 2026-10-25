@@ -743,6 +743,7 @@ export function KanbanCalendarPanel({
                 key={session.id}
                 session={session}
                 displayDate={date}
+                blocks={timeBlocks}
                 layout={itemLayouts.get(`session:${session.id}`) ?? DEFAULT_LAYOUT}
                 onClick={() => onViewTask?.(session.taskId)}
               />

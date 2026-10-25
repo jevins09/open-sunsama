@@ -795,6 +795,7 @@ export function MultiDayView({
                       key={session.id}
                       session={session}
                       displayDate={day}
+                      blocks={timeBlocks}
                       layout={
                         dayLayouts[i]?.get(`session:${session.id}`) ??
                         DEFAULT_LAYOUT

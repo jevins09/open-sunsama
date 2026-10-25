@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { WorkSession } from "@open-sunsama/types";
-import { sessionsOnDay, sessionLayoutItem } from "./work-session-block";
+import type { TimeBlock, WorkSession } from "@open-sunsama/types";
+import {
+  plannedColor,
+  sessionsOnDay,
+  sessionLayoutItem,
+} from "./work-session-block";
 
 function session(id: string, startedAt: Date, endedAt: Date): WorkSession {
   return {
@@ -63,5 +67,28 @@ describe("sessionLayoutItem for a short session", () => {
     expect(sessionLayoutItem(short, DAY).end).toEqual(
       new Date(2026, 9, 23, 9, 20)
     );
+  });
+});
+
+describe("plannedColor", () => {
+  const morning = session(
+    "e",
+    new Date(2026, 9, 23, 9),
+    new Date(2026, 9, 23, 10)
+  );
+  const block = (taskId: string, startTime: Date, color: string) =>
+    ({ taskId, startTime, color }) as TimeBlock;
+
+  it("uses the color of the task's planned block that day", () => {
+    const blocks = [
+      block("task-2", new Date(2026, 9, 23, 9), "#EF4444"),
+      block("task-1", new Date(2026, 9, 22, 9), "#22C55E"),
+      block("task-1", new Date(2026, 9, 23, 14), "#8B5CF6"),
+    ];
+    expect(plannedColor(morning, DAY, blocks)).toBe("#8B5CF6");
+  });
+
+  it("falls back to the planned blocks' default blue", () => {
+    expect(plannedColor(morning, DAY, [])).toBe("#3B82F6");
   });
 });

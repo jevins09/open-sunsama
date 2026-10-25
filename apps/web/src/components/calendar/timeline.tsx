@@ -453,6 +453,7 @@ export function Timeline({
                   key={session.id}
                   session={session}
                   displayDate={date}
+                  blocks={dayBlocks}
                   layout={itemLayouts.get(`session:${session.id}`) ?? DEFAULT_LAYOUT}
                   onClick={() => onViewTask?.(session.taskId)}
                 />

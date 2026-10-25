@@ -224,6 +224,7 @@ export function MobileMultiDayView({
                     key={session.id}
                     session={session}
                     displayDate={day}
+                    blocks={blocks}
                     layout={ACTUAL_TIME_LANE}
                   />
                 ))}

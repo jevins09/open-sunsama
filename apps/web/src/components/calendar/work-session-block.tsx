@@ -6,26 +6,29 @@ import {
   min,
   startOfDay,
   endOfDay,
+  isSameDay,
 } from "date-fns";
-import type { WorkSession } from "@open-sunsama/types";
+import type { TimeBlock, WorkSession } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { calculateYFromTime, HOUR_HEIGHT } from "@/hooks/useCalendarDnd";
-import { useCalendars } from "@/hooks/useCalendars";
 import type { LayoutItem, LayoutResult } from "./event-layout";
 
 const COLUMN_GAP_PCT = 1; // gap between side-by-side overlapping items
-const DEFAULT_COLOR = "#6B7280"; // gray, the same fallback synced events use
+const DEFAULT_COLOR = "#3B82F6"; // blue, the same default planned blocks use
 
 /**
- * The color of the user's connected calendar, so actual time matches their
- * meetings: the default calendar for events, else the first enabled one.
+ * The color of the task's planned block that day, so actual time matches
+ * its plan. Unplanned work gets the planned blocks' default blue.
  */
-function useCalendarColor(): string {
-  const { data: calendars = [] } = useCalendars();
-  const calendar =
-    calendars.find((c) => c.isEnabled && c.isDefaultForEvents) ??
-    calendars.find((c) => c.isEnabled);
-  return calendar?.color ?? DEFAULT_COLOR;
+export function plannedColor(
+  session: WorkSession,
+  day: Date,
+  blocks: TimeBlock[]
+): string {
+  const planned = blocks.find(
+    (b) => b.taskId === session.taskId && isSameDay(new Date(b.startTime), day)
+  );
+  return planned?.color || DEFAULT_COLOR;
 }
 
 /** Sessions that overlap the given day. */
@@ -62,6 +65,8 @@ interface WorkSessionBlockProps {
   session: WorkSession;
   /** The day being drawn; a session crossing midnight is clipped to it. */
   displayDate: Date;
+  /** Planned blocks around it; the task's block sets the color. */
+  blocks: TimeBlock[];
   layout?: LayoutResult;
   onClick?: () => void;
 }
@@ -73,10 +78,11 @@ interface WorkSessionBlockProps {
 export function WorkSessionBlock({
   session,
   displayDate,
+  blocks,
   layout = { lane: 0, columnCount: 1 },
   onClick,
 }: WorkSessionBlockProps) {
-  const color = useCalendarColor();
+  const color = plannedColor(session, displayDate, blocks);
   const startTime = new Date(session.startedAt);
   const endTime = new Date(session.endedAt);
   const visible = sessionLayoutItem(session, displayDate);
