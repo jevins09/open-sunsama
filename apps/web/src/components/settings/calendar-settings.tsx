@@ -12,6 +12,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
   Label,
 } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
@@ -130,6 +131,49 @@ function WorkingHoursCard() {
   );
 }
 
+function CalendarDisplayCard() {
+  const { user, updateUser } = useAuth();
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const showProjectedTasks = user?.preferences?.showProjectedTasks ?? true;
+
+  const handleShowProjectedChange = async (checked: boolean) => {
+    setIsSaving(true);
+    await updateUser({
+      preferences: {
+        ...(user?.preferences ?? { themeMode: "system" as const, colorTheme: "default", fontFamily: "geist" }),
+        showProjectedTasks: checked,
+      },
+    });
+    setIsSaving(false);
+    toast({ title: checked ? "Projected tasks shown" : "Projected tasks hidden" });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Calendar Display</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-projected-tasks">Show projected tasks</Label>
+            <p className="text-sm text-muted-foreground">
+              Draw dotted blocks on the board's calendar for tasks with no time block yet
+            </p>
+          </div>
+          <Switch
+            id="show-projected-tasks"
+            checked={showProjectedTasks}
+            onCheckedChange={handleShowProjectedChange}
+            disabled={isSaving}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 /**
  * Calendar Settings Tab
  * Manages calendar account connections and individual calendar settings
@@ -212,6 +256,7 @@ export function CalendarSettings() {
   return (
     <>
       <WorkingHoursCard />
+      <CalendarDisplayCard />
       <Card>
         <CardHeader>
           <CardTitle>Calendar Integration</CardTitle>

@@ -60,6 +60,12 @@ export interface UserPreferences {
    * across accounts, devices, and logins.
    */
   addTaskPosition?: "top" | "bottom";
+
+  /**
+   * Whether the calendar beside the board draws dotted "projected" blocks
+   * for open tasks that have no time block yet. Defaults to true.
+   */
+  showProjectedTasks?: boolean;
 }
 
 /**

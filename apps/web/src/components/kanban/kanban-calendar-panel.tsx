@@ -310,7 +310,9 @@ export function KanbanCalendarPanel({
   const workStartHour = user?.preferences?.workStartHour ?? 9;
   const workEndHour = user?.preferences?.workEndHour ?? 17;
   const { data: dayTasks = [] } = useTasks({ scheduledDate: dateString, limit: 200 });
+  const showProjectedTasks = user?.preferences?.showProjectedTasks ?? true;
   const projected = React.useMemo(() => {
+    if (!showProjectedTasks) return [];
     const open = dayTasks
       .filter((t) => !t.completedAt)
       .sort((a, b) => a.position - b.position);
@@ -336,7 +338,7 @@ export function KanbanCalendarPanel({
       const mins = task.estimatedMins || DEFAULT_PLANNED_MINS;
       return [{ task, start, end: addMinutes(start, mins) }];
     });
-  }, [dayTasks, dayBlocks, calendarEvents, date, workStartHour]);
+  }, [showProjectedTasks, dayTasks, dayBlocks, calendarEvents, date, workStartHour]);
 
   // Bucket the visible-range events into timed (drawn on the timeline)
   // and all-day (drawn in the banner above). Same shape as the main
